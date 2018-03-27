@@ -104,7 +104,7 @@ app.get('/api/questions/:id',function *(req,res){
 });
 
 
-app.get(['/'], function * (req, res) {
+app.get(['/', '/questions/:id'], function * (req, res) {
     let index = yield fs.readFile('./public/index.html', "utf-8");
 
     const history = createHistory({
@@ -123,7 +123,7 @@ app.get(['/'], function * (req, res) {
 
     initialState.questions = questions.items;
 
-    const store = getStore(initialState);
+    const store = getStore(history, initialState);
     
     if(useServerRender){
         const appRendered = renderToString(
