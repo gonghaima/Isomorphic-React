@@ -11,6 +11,8 @@ import {renderToString} from 'react-dom/server';
 import { Provider } from 'react-redux';
 import React from 'react';
 import App from '../src/App';
+import { ConnectedRouter } from 'react-router-redux';
+import createHistory from 'history/createMemoryHistory';
 
 const port = process.env.PORT || 3000;
 const app = express();
@@ -105,6 +107,14 @@ app.get('/api/questions/:id',function *(req,res){
 app.get(['/'], function * (req, res) {
     let index = yield fs.readFile('./public/index.html', "utf-8");
 
+    const history = createHistory({
+        /**
+         * By setting initialEntries to the current path, the application will correctly render into the
+         * right view when server rendering
+         */
+        initialEntries: [req.path],
+    });
+
     const initialState = {
         questions: []
     };
@@ -118,7 +128,9 @@ app.get(['/'], function * (req, res) {
     if(useServerRender){
         const appRendered = renderToString(
             <Provider store={store}>
-                <App />
+                <ConnectedRouter history={history}>
+                    <App />
+                </ConnectedRouter>
             </Provider>
         );
         index = index.replace(`<%= preloadedApplication %>`, appRendered );
