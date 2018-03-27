@@ -6,6 +6,11 @@ import { argv } from 'optimist';
 import { get } from 'request-promise';
 import { delay } from 'redux-saga';
 import { questions, question } from '../data/api-real-url';
+import getStore from '../src/getStore';
+import {renderToString} from 'react-dom/server';
+import { Provider } from 'react-redux';
+import React from 'react';
+import App from '../src/App';
 
 const port = process.env.PORT || 3000;
 const app = express();
@@ -99,6 +104,28 @@ app.get('/api/questions/:id',function *(req,res){
 
 app.get(['/'], function * (req, res) {
     let index = yield fs.readFile('./public/index.html', "utf-8");
+
+    const initialState = {
+        questions: []
+    };
+
+    const questions = yield getQuestions();
+
+    initialState.questions = questions.items;
+
+    const store = getStore(initialState);
+    
+    if(useServerRender){
+        const appRendered = renderToString(
+            <Provider store={store}>
+                <App />
+            </Provider>
+        );
+        index = index.replace(`<%= preloadedApplication %>`, appRendered );
+    }else{
+        index = index.replace(`<%= preloadedApplication %>`, `Please wait while we load the application.` );
+    }
+
     res.send(index);
 });
 
