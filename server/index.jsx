@@ -119,9 +119,15 @@ app.get(['/', '/questions/:id'], function * (req, res) {
         questions: []
     };
 
-    const questions = yield getQuestions();
-
-    initialState.questions = questions.items;
+    if(req.params.id){
+        const question_id=req.params.id;
+        const response = yield getQuestion(question_id);
+        const questionDetails = response.items[0];
+        initialState.questions=[{...questionDetails, question_id}];
+    }else{
+        const questions = yield getQuestions();
+        initialState.questions = questions.items;
+    }
 
     const store = getStore(history, initialState);
     
