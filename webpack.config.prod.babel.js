@@ -12,6 +12,7 @@ export default {
         /**
          * The entry point of the main application
          */
+        'babel-regenerator-runtime',
         path.resolve(__dirname, 'src/')
     ],
     output: {
