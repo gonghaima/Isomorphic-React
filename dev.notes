@@ -1,0 +1,86 @@
+Loading sequence
+	"start-prod":"npm run build && cross-env NODE_ENV=production babel-node server --useLiveData=true --useServerRender=true"
+	--->
+		npm run build
+			--->
+				dist/bundle.js
+	--->
+		babel-node server
+			--->
+				server/index.jsx 
+					--->
+						initanciate an express server
+							--->
+								const app = express();
+						host fie from dist folder
+							--->
+								app.use(express.static(path.resolve(__dirname, '../dist')));
+						server site routing
+							--->
+								app.get('/api/questions',function *(req,res){})
+								app.get('/api/questions',function *(req,res){})
+								app.get(['/','/questions/:id'], function *(req,res){})
+									--->
+										let index = yield fs.readFile('./public/index.html',"utf-8");
+										res.send(index);
+	--->
+		public/index.html
+			--->
+				<div id="AppContainer">
+					<div>
+						<%= preloadedApplication %>
+					</div>
+				</div>
+				<script src="/bundle.js"></script>
+			
+Environment Setting
+	--->
+		package.json
+			---> Scripts 
+				cross-env NODE_ENV=production
+	--->
+		server/index.jsx
+			--->
+				if(process.env.NODE_ENV === 'development') {}
+				
+Server side rendering
+	--->
+		package.json
+			---> Scripts 
+				--useServerRender=true
+	--->
+		server/index.jsx
+			--->
+				import { renderToString } from 'react-dom/server';
+				const useServerRender = argv.useServerRender === 'true';
+				if (useServerRender) {
+				const appRendered = renderToString(
+					/**
+					 * Surround the application in a provider with a store populated with our initialState and memoryHistory
+					 */
+					<Provider store={store}>
+						<ConnectedRouter history={history}>
+							<App />
+						</ConnectedRouter>
+					</Provider>
+				);
+				index = index.replace(`<%= preloadedApplication %>`,appRendered)
+				res.send(index);
+	--->
+		client side src/index.jsx
+			---> set store, and fetch data from api
+Client side rendering
+	---> render as usual react
+useLiveData
+	--->
+		package.json
+			---> Scripts 
+				---useLiveData=true
+	--->
+		server/index.jsx				
+			---> const useLiveData = argv.useLiveData === 'true';
+				 if (useLiveData) {
+					data = yield get(questions,{gzip:true});
+				} else {
+					data = yield fs.readFile('./data/mock-questions.json',"utf-8");
+				}
