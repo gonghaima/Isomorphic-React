@@ -9,7 +9,7 @@ Loading sequence
 			--->
 				server/index.jsx 
 					--->
-						initanciate an express server
+						instantiate an express server
 							--->
 								const app = express();
 						host fie from dist folder
