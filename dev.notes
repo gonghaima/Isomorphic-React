@@ -53,6 +53,8 @@ Server side rendering
 			--->
 				import { renderToString } from 'react-dom/server';
 				const useServerRender = argv.useServerRender === 'true';
+
+				let index = yield fs.readFile('./public/index.html',"utf-8");
 				if (useServerRender) {
 				const appRendered = renderToString(
 					/**
@@ -84,3 +86,62 @@ useLiveData
 				} else {
 					data = yield fs.readFile('./data/mock-questions.json',"utf-8");
 				}
+				
+Saga		
+	--->
+		index.jsx
+			import createHistory from 'history/createBrowserHistory';
+			const history = createHistory();
+			const store = getStore(history);
+			store.dispatch({ type: `REQUEST_FETCH_QUESTIONS` });
+	--->
+		fetch-questions-saga.js
+			export default function* () {
+				while (true) {
+					yield take(`REQUEST_FETCH_QUESTIONS`);
+					const raw = yield fetch('/api/questions');
+					const json = yield raw.json();
+					const questions = json.items;
+					
+					yield put({type:`FETCHED_QUESTIONS`,questions});
+				}
+			}
+	--->
+		reducer/questions.js
+			import unionWith from 'lodash/unionWith';
+
+			export const questions = (state=[], {type, questions, question}) =>{
+				const questionEquality = (a={}, b={}) =>{
+					return a.question_id == b.question_id;
+				};
+			  
+				if(type==='FETCHED_QUESTIONS'){
+					state = unionWith(state, questions, questionEquality);
+				};
+
+				return state;
+			};
+			
+Get apiData from redux ("questions" data)
+
+	---> QuestionList.jsx
+		
+		import { connect } from 'react-redux';
+
+		const QuestionList = ({ questions }) => {
+		  return questions && questions.length ? (
+			<div>
+			  {questions.map(question => (
+				<QuestionListItem key={question.question_id} {...question} />
+			  ))}
+			</div>
+		  ) : (
+			<div>... Loading questions... </div>
+		  );
+		};
+
+		const mapStateToProps = ({ questions }) => ({
+		  questions
+		});
+
+		export default connect(mapStateToProps)(QuestionList);
